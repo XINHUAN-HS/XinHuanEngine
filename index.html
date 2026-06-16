@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>XinHuanEngine</title>
+    <style>
+        /* ---------- CSS变量：统一管理主题色 ---------- */
+        :root {
+            --bg-color: #f5f7fa;
+            --text-color: #1e293b;
+            --input-bg: rgba(255, 255, 255, 0.86);
+            --input-shadow: 0 8px 30px rgba(0, 0, 0, 0.07);
+            --input-focus-bg: rgba(255, 255, 255, 0.98);
+            --btn-bg: rgba(255, 255, 255, 0.72);
+            --btn-text: #475569;
+            --btn-active-bg: #6366f1;
+            --btn-active-text: #fff;
+            --placeholder-color: #94a3b8;
+            --icon-color: #5f6368;
+            --hint-color: #94a3b8;
+        }
+
+        /* 深色主题覆盖 */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #0f1117;
+                --text-color: #e2e8f0;
+                --input-bg: rgba(26, 29, 41, 0.83);
+                --input-shadow: 0 8px 34px rgba(0, 0, 0, 0.45);
+                --input-focus-bg: rgba(31, 35, 51, 0.95);
+                --btn-bg: rgba(30, 33, 45, 0.76);
+                --btn-text: #cbd5e1;
+                --btn-active-bg: #818cf8;
+                --btn-active-text: #0f1117;
+                --placeholder-color: #64748b;
+                --icon-color: #9aa0a6;
+                --hint-color: #64748b;
+            }
+        }
+
+        /* ---------- 全局重置 ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                "Helvetica Neue", Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .search-wrapper {
+            width: 90%;
+            max-width: 660px;
+            text-align: center;
+        }
+
+        /* ---------- 搜索框容器 ---------- */
+        .search-container {
+            display: flex;
+            align-items: center;
+            background: var(--input-bg);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-radius: 56px;
+            padding: 4px 8px 4px 16px;
+            box-shadow: var(--input-shadow);
+            transition: all 0.35s ease;
+        }
+
+        .search-container:hover {
+            box-shadow: 0 12px 44px rgba(0, 0, 0, 0.10);
+        }
+
+        .search-container:focus-within {
+            box-shadow: 0 16px 56px rgba(0, 0, 0, 0.13);
+            background: var(--input-focus-bg);
+        }
+
+        /* 左侧放大镜 + 引擎名称（可点击区域） */
+        .left-icons {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 999px;
+            flex-shrink: 0;
+            user-select: none;
+            transition: background-color 0.2s ease;
+        }
+
+        .left-icons:hover {
+            background-color: rgba(128, 138, 157, 0.12);
+        }
+
+        .magnifier {
+            width: 22px;
+            height: 22px;
+            fill: var(--icon-color);
+        }
+
+        .engine-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--icon-color);
+            line-height: 1;
+        }
+
+        /* 输入框 */
+        .search-input {
+            flex: 1;
+            height: 46px;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 18px;
+            color: var(--text-color);
+            padding: 0 14px;
+        }
+
+        .search-input::placeholder {
+            color: var(--placeholder-color);
+            font-weight: 340;
+        }
+
+        /* ---------- 引擎按钮区域（默认隐藏） ---------- */
+        .engine-selector {
+            margin-top: 20px;
+            display: none; /* 默认隐藏 */
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* 显示引擎按钮区域的类 */
+        .engine-selector.show {
+            display: flex;
+        }
+
+        .engine-btn {
+            padding: 8px 18px;
+            font-size: 14px;
+            font-weight: 510;
+            border-radius: 20px;
+            border: none;
+            background: var(--btn-bg);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            color: var(--btn-text);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .engine-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.09);
+            background: var(--input-focus-bg);
+        }
+
+        .engine-btn.active {
+            background: var(--btn-active-bg);
+            color: var(--btn-active-text);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+     
+
+        /* 小屏适配 */
+        @media (max-width: 560px) {
+            .search-container {
+                padding: 4px 6px 4px 12px;
+            }
+            .search-input {
+                font-size: 16px;
+                height: 42px;
+            }
+            .magnifier {
+                width: 18px;
+                height: 18px;
+            }
+            .engine-label {
+                font-size: 13px;
+            }
+            .engine-btn {
+                padding: 6px 14px;
+                font-size: 13px;
+            }
+        }
+
+        /* 动画 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="search-wrapper">
+        <!-- 搜索框 -->
+        <div class="search-container">
+            <!-- 可点击的左侧区域，用于切换引擎列表 -->
+            <div class="left-icons" id="toggleEngineBtn">
+                <svg class="magnifier" viewBox="0 0 24 24" focusable="false">
+                    <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                </svg>
+                <span class="engine-label" id="engineLabel">Google</span>
+            </div>
+            <input type="text" class="search-input" id="queryInput" placeholder="搜索你想要的…" autofocus />
+        </div>
+
+        <!-- 引擎按钮列表（默认隐藏） -->
+        <div class="engine-selector" id="engineSelector"></div>
+    </div>
+
+    <script>
+        // 搜索引擎配置
+        const searchEngines = [
+            { id: 'google', name: 'Google', url: 'https://www.google.com/search?q=' },
+            { id: 'bing', name: 'Bing', url: 'https://www.bing.com/search?q=' },
+            { id: 'baidu', name: '百度', url: 'https://www.baidu.com/s?wd=' },
+            { id: 'duckduckgo', name: 'DuckDuckGo', url: 'https://duckduckgo.com/?q=' },
+            { id: 'github', name: 'GitHub', url: 'https://github.com/search?q=' },
+            { id: 'zhihu', name: '知乎', url: 'https://www.zhihu.com/search?q=' }
+        ];
+
+        // 读取上次选择的引擎，没有则默认 google
+        let currentEngineId = localStorage.getItem('preferredEngine') || 'google';
+
+        const input = document.getElementById('queryInput');
+        const engineLabel = document.getElementById('engineLabel');
+        const selectorContainer = document.getElementById('engineSelector');
+        const toggleBtn = document.getElementById('toggleEngineBtn');
+
+        // 更新引擎标签和按钮状态
+        function setActiveEngine(id) {
+            currentEngineId = id;
+            const engine = searchEngines.find(e => e.id === id);
+            if (engine) {
+                engineLabel.textContent = engine.name;
+            }
+            localStorage.setItem('preferredEngine', id);
+            document.querySelectorAll('.engine-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.engine === id);
+            });
+            input.focus();
+        }
+
+        // 创建引擎按钮
+        function buildButtons() {
+            selectorContainer.innerHTML = '';
+            searchEngines.forEach(engine => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'engine-btn';
+                btn.textContent = engine.name;
+                btn.dataset.engine = engine.id;
+                if (engine.id === currentEngineId) {
+                    btn.classList.add('active');
+                }
+                btn.addEventListener('click', () => {
+                    setActiveEngine(engine.id);
+                    // 选择引擎后隐藏引擎列表
+                    selectorContainer.classList.remove('show');
+                });
+                selectorContainer.appendChild(btn);
+            });
+        }
+
+        // 执行搜索
+        function performSearch() {
+            const query = input.value.trim();
+            if (!query) return;
+            const engine = searchEngines.find(e => e.id === currentEngineId);
+            if (!engine) return;
+            const url = engine.url + encodeURIComponent(query);
+            window.open(url, '_blank');
+        }
+
+        // 监听回车键
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                performSearch();
+            }
+        });
+
+        // 点击放大镜区域切换引擎列表
+        toggleBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            selectorContainer.classList.toggle('show');
+        });
+
+        // 点击页面其他区域时隐藏引擎列表
+        document.addEventListener('click', function(e) {
+            if (!selectorContainer.contains(e.target) && !toggleBtn.contains(e.target)) {
+                selectorContainer.classList.remove('show');
+            }
+        });
+
+        // 初始化
+        buildButtons();
+        setActiveEngine(currentEngineId);
+    </script>
+</body>
+</html>
