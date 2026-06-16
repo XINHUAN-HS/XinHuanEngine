@@ -291,6 +291,7 @@
             const engine = searchEngines.find(e => e.id === currentEngineId);
             if (!engine) return;
             const url = engine.url + encodeURIComponent(query);
+            input.value = ''
             window.open(url, '_blank');
         }
 
