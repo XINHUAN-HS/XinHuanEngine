@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "XinHuanNewTab",
+  "version": "1.0.0",
+  "description": "简洁多引擎搜索 · 新标签页扩展（支持 Chrome / Edge）",
+
+  "permissions": [
+    "storage"
+  ],
+
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+
+  "icons": {
+    "16": "ico16.ico",
+    "32": "ico32.ico",
+    "48": "ico48.ico",
+    "128": "ico128.ico"
+  },
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": "ico32.ico"
+  }
+}
